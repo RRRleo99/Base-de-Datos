@@ -10,7 +10,7 @@ const promedioSchema = new mongoose.Schema({
     condicion:String
 })
 
-promedioModel.plugin(mongoosePaginate)
+promedioSchema.plugin(mongoosePaginate)
 const promedioModel = mongoose.model("estudiantes", promedioSchema)
 
 export default promedioModel;
