@@ -1,60 +1,41 @@
-import express from "express";
-import exphbs from "express-handlebars";
-import mongoose from "mongoose";
-import promedioModel from "./models/promedio.model.js";
+import express from 'express';
+import mongoose from 'mongoose';
+import handlebars from 'express-handlebars';
+import path from 'path';
+import productRouter from './routes/product.router.js';
+import cartRouter from './routes/cart.router.js';
 
 const app = express();
-const PUERTO = 5173;
 
-app.use(express.json())
-app.use(express.urlencoded({extends:true}))
-app.engine("handlebars",exphbs.engine())
-app.set("view engine","handlebars")
-app.set("views", "./src/views")
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
-const main = async ()=>{
-    mongoose.connect("mongodb+srv://leonelrivero:leoleoleobd@cluster0.pdrx1je.mongodb.net/coderhouse?retryWrites=true&w=majority&appName=Cluster0");
+app.engine('handlebars', handlebars.engine());
+app.set('view engine', 'handlebars');
+app.set('views', path.join(__dirname, 'views'));
 
+app.use(express.static(path.join(__dirname, 'public')));
 
-const resultado = await promedioModel.paginate({"condicion" : "aprobado"},{limit:2 , page:2})
-console.log(resultado)
+app.use('/api/products', productRouter);
+app.use('/api/carts', cartRouter);
 
-}
+app.get('/', (req, res) => {
+  res.render('products', { title: 'Productos' });
+});
 
+ mongoose.connect("mongodb+srv://leonelrivero:leoleoleobd@cluster0.pdrx1je.mongodb.net/coderhouse?retryWrites=true&w=majority&appName=Cluster0")
+                          
+  .then(() => {
+    console.log('//localhost:27017/mydatabase')
+     })
+  .then(() => {
+    console.log('Conectado a MongoDB');
+  })
+  .catch((error) => {
+    console.error('Error al conectar a MongoDB:', error);
+  });
 
-// mongoose.connect("mongodb+srv://leonelrivero:leoleoleobd@cluster0.pdrx1je.mongodb.net/coderhouse?retryWrites=true&w=majority&appName=Cluster0");
-
-
-app.get("/estudiantes", async (req, res)=>{
-    let page = req.query.page || 1;
-    let limit = 2;
-
-    try{
-    const ListadoDeEstudiantes = await promedioModel.paginate({},{limit, page})
-
-        const estudiantesTotal = ListadoDeEstudiantes.docs.map(estudiantes =>{
-            const{_id, ...rest} = estudiantes.toObject() 
-            return rest;
-        })
-        res.render("estudiantes",{
-            estudiantes: estudiantesTotal,
-            hasPrevPage: ListadoDeEstudiantes.hasPrevPage,
-            hasNextPage: ListadoDeEstudiantes.hasNextPage,
-            PrevPage: ListadoDeEstudiantes.PrevPage,
-            NextPage: ListadoDeEstudiantes.NextPage,
-            currentPage: ListadoDeEstudiantes.page,
-            totalPages: ListadoDeEstudiantes.totalPages
-
-        })
-    }
-    catch(error){
-        console.log(error)
-        res.status(500).send("no responde")
-    }
-    
-    
-})
-
- app.listen(PUERTO,()=>{
-    console.log("escuchamos puerto 5173")
- })
+const PORT = 3000;
+app.listen(PORT, () => {
+  console.log(`Servidor escuchando en el puerto ${PORT}`);
+});
